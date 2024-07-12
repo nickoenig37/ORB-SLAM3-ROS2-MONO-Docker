@@ -80,6 +80,9 @@ namespace ORB_SLAM3_Wrapper
 
         void handleIMU(const sensor_msgs::msg::Imu::SharedPtr msgIMU);
 
+        // called for the particular files using it 
+        bool trackRGB(const sensor_msgs::msg::Image::SharedPtr msgRGB, Sophus::SE3f &Tcw);  // Modified to handle only RGB images
+
         bool trackRGBDi(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
 
         bool trackRGBD(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
