@@ -57,3 +57,6 @@ RUN apt-get update && apt-get install ros-humble-pcl-ros tmux -y
 RUN apt-get install ros-humble-nav2-common x11-apps nano -y
 COPY ORB_SLAM3 /home/orb/ORB_SLAM3
 RUN . /opt/ros/humble/setup.sh && cd /home/orb/ORB_SLAM3 && mkdir build && ./build.sh
+
+# New dependencies with monocular addition
+RUN apt-get install libcanberra-gtk-module libcanberra-gtk3-module -y
