@@ -61,6 +61,10 @@ If you are inside the container, run the following:
 ### Potential issues you may face.
 The simulation and the wrapper both have their ```ROS_DOMAIN_ID``` set to 55 so they are meant to work out of the box. However, you may face issues if this environment variable is not set properly. Before you start the wrapper, run ```ros2 topic list``` and make sure the topics namespaced with ```scout_2``` are visible inside the ORB-SLAM3 container provided the simulation is running along the side.
 
+* If you are trying to setup this container with a local simulation, you are going to need to use cyclone_rmw because fast seems to have issues with this. 
+- This link goes through the mentioned error: https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker/issues/8
+But you want to go into your directory for the container, cd /container_root/.ros and add the cyclonedds.xml file mentioned in that post, along with the other instructions for your local machine and .bashrc file.
+
 
 ## Important notes
 
