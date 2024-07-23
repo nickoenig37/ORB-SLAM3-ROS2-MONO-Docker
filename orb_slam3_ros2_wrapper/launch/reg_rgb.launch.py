@@ -47,7 +47,7 @@ def generate_launch_description():
     def all_nodes_launch(context):
         params_file = LaunchConfiguration('params_file')
         vocabulary_file_path = "/home/orb/ORB_SLAM3/Vocabulary/ORBvoc.txt"
-        config_file_path = "/root/colcon_ws/src/orb_slam3_ros2_wrapper/params/rgb_cam_cal.yaml"
+        config_file_path = "/root/colcon_ws/src/orb_slam3_ros2_wrapper/params/rgb_rpi_cam_cal.yaml"
         #config_file_path = "/root/colcon_ws/src/orb_slam3_ros2_wrapper/params/scout_v2_rgbd.yaml"
         declare_params_file_cmd = DeclareLaunchArgument(
             'params_file',
@@ -56,8 +56,9 @@ def generate_launch_description():
             description='Full path to the ROS2 parameters file to use for all launched nodes')
 
         param_substitutions = {
-            'robot_base_frame': context.launch_configurations['robot_namespace'] + '/base_footprint',
-            'odom_frame': context.launch_configurations['robot_namespace'] + '/odom',
+            #'robot_base_frame': context.launch_configurations['robot_namespace'] + '/base_footprint',
+            'robot_base_frame': '/base_footprint',
+            'odom_frame': '/odom',
             'robot_x': context.launch_configurations['robot_x'],
             'robot_y': context.launch_configurations['robot_y']
             }
