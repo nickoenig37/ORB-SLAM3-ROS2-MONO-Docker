@@ -60,3 +60,6 @@ RUN . /opt/ros/humble/setup.sh && cd /home/orb/ORB_SLAM3 && mkdir build && ./bui
 
 # New dependencies with monocular addition
 RUN apt-get install libcanberra-gtk-module libcanberra-gtk3-module -y
+
+# For fixing communication between containers
+RUN apt-get install -y ros-humble-rmw-cyclonedds-cpp
