@@ -83,9 +83,9 @@ namespace ORB_SLAM3_Wrapper
         // called for the particular files using it 
         bool trackRGB(const sensor_msgs::msg::Image::SharedPtr msgRGB, Sophus::SE3f &Tcw);  // Modified to handle only RGB images
 
-        bool trackRGBDi(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
+        // bool trackRGBDi(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
 
-        bool trackRGBD(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
+        // bool trackRGBD(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
 
     private:
         std::shared_ptr<ORB_SLAM3::System> mSLAM_;
