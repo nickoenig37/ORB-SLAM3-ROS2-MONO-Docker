@@ -284,7 +284,7 @@ namespace ORB_SLAM3_Wrapper
         try
         {
             cvRGB = cv_bridge::toCvShare(msgRGB);
-            std::cout << "Converted ROS image to CV image." << std::endl;
+            // std::cout << "Converted ROS image to CV image." << std::endl;
         }
         catch (cv_bridge::Exception &e)
         {
@@ -292,7 +292,7 @@ namespace ORB_SLAM3_Wrapper
             return false;
         }
 
-        // Track the frame.
+        // Track the frame. (The tracking states are determined in ORB_SLAM3/src/Tracking.cc )
         Tcw = mSLAM_->TrackMonocular(cvRGB->image, typeConversions_->stampToSec(msgRGB->header.stamp));
         auto currentTrackingState = mSLAM_->GetTrackingState();
         auto orbLoopClosing = mSLAM_->GetLoopClosing();
@@ -302,6 +302,7 @@ namespace ORB_SLAM3_Wrapper
             std::cout << "Waiting for merge to finish." << std::endl;
             return false;
         }
+        // This is the case where tracking succeeded.
         if (currentTrackingState == 2)
         {
             calculateReferencePoses();
@@ -309,6 +310,7 @@ namespace ORB_SLAM3_Wrapper
             hasTracked_ = true;
             return true;
         }
+        // These are the cases where tracking failed.
         else
         {
             switch (currentTrackingState)
@@ -316,10 +318,10 @@ namespace ORB_SLAM3_Wrapper
             case 0:
                 std::cerr << "ORB-SLAM failed: No images yet." << std::endl;
                 break;
-            case 1:
+            case 1: // Not initialized means that the map is not ready yet (more frames need to be genereated for monocular)
                 std::cerr << "ORB-SLAM failed: Not initialized." << std::endl;
                 break;
-            case 3:
+            case 3: // System lost tracking- system can't track the camera pose relative to the map or not enough features for pose estimation
                 std::cerr << "ORB-SLAM failed: Tracking LOST." << std::endl;
                 break;
             }
