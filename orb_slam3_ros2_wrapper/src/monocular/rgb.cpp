@@ -27,9 +27,6 @@ int main(int argc, char **argv)
     executor->add_node(node);
     executor->spin();
 
-    // Call the function to save the trajectory
-    node->SaveTrajectoryTUM("/root/trajectory_save/traj_data.txt");
-
     rclcpp::shutdown();
 
     return 0;

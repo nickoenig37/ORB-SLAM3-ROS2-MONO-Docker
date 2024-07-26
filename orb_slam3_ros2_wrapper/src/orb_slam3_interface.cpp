@@ -4,8 +4,6 @@
  * @author Suchetan R S (rssuchetan@gmail.com)
  */
 #include "orb_slam3_ros2_wrapper/orb_slam3_interface.hpp"
-#include "orb_slam3_interface.hpp"
-#include <iostream>
 
 namespace ORB_SLAM3_Wrapper
 {
@@ -34,9 +32,6 @@ namespace ORB_SLAM3_Wrapper
         mSLAM_ = std::make_shared<ORB_SLAM3::System>(strVocFile_, strSettingsFile_, sensor_, bUseViewer_);
         typeConversions_ = std::make_shared<WrapperTypeConversions>();
         std::cout << "Interface constructor complete" << endl;
-
-        // Initialize mpTracker
-        mpTracker = mSLAM_->GetTracker();
     }
 
     ORBSLAM3Interface::~ORBSLAM3Interface()
@@ -350,15 +345,4 @@ namespace ORB_SLAM3_Wrapper
             return false;
         }
     }
-
-    std::vector<ORB_SLAM3::KeyFrame*> ORBSLAM3Interface::GetKeyFrames() const {
-        std::vector<ORB_SLAM3::KeyFrame*> keyframes(mpTracker->mlpReferences.begin(), mpTracker->mlpReferences.end());
-        return keyframes;
-    }
-
-    std::vector<double> ORBSLAM3Interface::GetFrameTimes() const {
-        std::vector<double> frameTimes(mpTracker->mlFrameTimes.begin(), mpTracker->mlFrameTimes.end());
-        return frameTimes;
-    }
-
 }

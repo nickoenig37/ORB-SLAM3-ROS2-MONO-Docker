@@ -7,12 +7,7 @@
 // This is an edit made by Nick Koenig on the rgdb package but to use with rgb
 
 #include "rgb-slam-node.hpp"
-#include <fstream>
-#include <iomanip>
-#include <iostream>
 #include <opencv2/core/core.hpp>
-#include <opencv2/core/eigen.hpp>
-#include "ORB_SLAM3/Converter.h"
 
 
 namespace ORB_SLAM3_Wrapper
@@ -210,36 +205,6 @@ namespace ORB_SLAM3_Wrapper
             RCLCPP_INFO_STREAM(this->get_logger(), "Time to create mapdata: " << time_publishMapData << " seconds");
             RCLCPP_INFO_STREAM(this->get_logger(), "*************************");
         }
-    }
-
-
-    // Function to save trajectory in TUM format
-    void RgbSlamNode::SaveTrajectoryTUM(const std::string &filename)
-    {
-        std::ofstream f;
-        f.open(filename.c_str());
-        f << std::fixed;
-
-        for (size_t i = 0; i < interface_->GetKeyFrames().size(); i++)
-        {
-            ORB_SLAM3::KeyFrame *pKF = interface_->GetKeyFrames()[i];
-            if (pKF->isBad())
-                continue;
-
-            double timestamp = interface_->GetFrameTimes()[i];
-            Sophus::SE3f Tcw = pKF->GetPose();
-
-            Eigen::Matrix3f R_eigen = Tcw.rotationMatrix();
-            Eigen::Vector3f t = Tcw.translation();
-
-            cv::Mat R_cv;
-            cv::eigen2cv(R_eigen, R_cv);
-            std::vector<float> q = ORB_SLAM3::Converter::toQuaternion(R_cv);
-
-            f << std::setprecision(6) << timestamp << " " << std::setprecision(9) << t[0] << " " << t[1] << " " << t[2]
-            << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << std::endl;
-        }
-        f.close();
     }
 
     void RgbSlamNode::getMapServer(std::shared_ptr<rmw_request_id_t> request_header,

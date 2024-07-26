@@ -46,7 +46,6 @@ namespace ORB_SLAM3_Wrapper
                      const std::string &strSettingsFile,
                      ORB_SLAM3::System::eSensor sensor);
         ~RgbSlamNode();
-        void SaveTrajectoryTUM(const std::string &filename);
 
     private:
         // typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::Image> approximate_sync_policy;

@@ -26,17 +26,12 @@
 
 #include "sophus/se3.hpp"
 #include "System.h"
-#include "Tracking.h"
-
-#include "KeyFrame.h"
 
 #include "Frame.h"
 #include "Map.h"
 #include "Atlas.h"
 #include "orb_slam3_ros2_wrapper/type_conversion.hpp"
 
-#include <memory>
-#include <vector>
 
 namespace ORB_SLAM3_Wrapper
 {
@@ -94,9 +89,6 @@ namespace ORB_SLAM3_Wrapper
         // bool trackRGBDi(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
 
         // bool trackRGBD(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
-        
-        std::vector<ORB_SLAM3::KeyFrame*> GetKeyFrames() const;
-        std::vector<double> GetFrameTimes() const;
 
     private:
         std::shared_ptr<ORB_SLAM3::System> mSLAM_;
@@ -127,8 +119,6 @@ namespace ORB_SLAM3_Wrapper
         std::string globalFrame_;
         std::string odomFrame_;
         std::string robotFrame_;
-
-        ORB_SLAM3::Tracking* mpTracker;
     };
 }
 
