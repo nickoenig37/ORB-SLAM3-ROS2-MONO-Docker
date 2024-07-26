@@ -34,7 +34,7 @@ Camera.bf: 0  # Set if you have stereo setup, otherwise keep as 0
 Camera.RGB: 1  # Set according to your camera output
 
 # Depth map values factor (TODO: MAYBE TRY GOING TO 0.5)
-DepthMapFactor: 1.0  # Set this according to your depth data
+DepthMapFactor: 0.3  # Set this according to your depth data
 
 
 # Adding this to see if it makes succinct difference

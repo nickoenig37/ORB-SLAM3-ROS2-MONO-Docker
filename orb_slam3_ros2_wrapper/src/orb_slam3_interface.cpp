@@ -4,6 +4,8 @@
  * @author Suchetan R S (rssuchetan@gmail.com)
  */
 #include "orb_slam3_ros2_wrapper/orb_slam3_interface.hpp"
+#include "orb_slam3_interface.hpp"
+#include <iostream>
 
 namespace ORB_SLAM3_Wrapper
 {
@@ -32,6 +34,9 @@ namespace ORB_SLAM3_Wrapper
         mSLAM_ = std::make_shared<ORB_SLAM3::System>(strVocFile_, strSettingsFile_, sensor_, bUseViewer_);
         typeConversions_ = std::make_shared<WrapperTypeConversions>();
         std::cout << "Interface constructor complete" << endl;
+
+        // Initialize mpTracker
+        mpTracker = mSLAM_->GetTracker();
     }
 
     ORBSLAM3Interface::~ORBSLAM3Interface()
@@ -44,9 +49,12 @@ namespace ORB_SLAM3_Wrapper
         allKFs_.clear();
     }
 
-    std::map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList)
+    // std::map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList)
+    std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList) // For pcl viz
     {
-        map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
+        // map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
+        std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
+
         for (ORB_SLAM3::Map *pMap_i : mapsList)
         {
             std::vector<ORB_SLAM3::KeyFrame *> vpKFs_Mi = pMap_i->GetAllKeyFrames();
@@ -111,16 +119,30 @@ namespace ORB_SLAM3_Wrapper
     }
 
     void ORBSLAM3Interface::getCurrentMapPoints(sensor_msgs::msg::PointCloud2 &mapPointCloud)
-    {
+    {   
+        std::lock_guard<std::mutex> lock(currentMapPointsMutex_); // For pcl viz w thread
+        // this flag serves to support
+
         std::vector<Eigen::Vector3f> trackedMapPoints;
-        for (auto KF : orbAtlas_->GetAllKeyFrames())
+        // for (auto KF : orbAtlas_->GetAllKeyFrames())
+        auto atlasAllKFs_ = orbAtlas_->GetAllKeyFrames();
+        for (auto& KF : atlasAllKFs_)
         {
-            for (auto mapPoint : KF->GetMapPoints())
+            // for (auto mapPoint : KF->GetMapPoints())
+            for (auto& mapPoint : KF->GetMapPoints()) // For pcl viz
             {
                 if (!mapPoint->isBad())
                 {
                     auto worldPos = typeConversions_->vector3fORBToROS(mapPoint->GetWorldPos());
                     mapReferencesMutex_.lock();
+
+                    // Added for mapping pcl's 
+                    if(allKFs_.count(KF->mnId) == 0)
+                    {
+                        mapReferencesMutex_.unlock();
+                        continue;
+                    }
+
                     auto mapPointWorld = typeConversions_->transformPointWithReference<Eigen::Vector3f>(mapReferencePoses_[allKFs_[KF->mnId]->GetMap()], worldPos);
                     mapReferencesMutex_.unlock();
                     trackedMapPoints.push_back(mapPointWorld);
@@ -327,6 +349,16 @@ namespace ORB_SLAM3_Wrapper
             }
             return false;
         }
+    }
+
+    std::vector<ORB_SLAM3::KeyFrame*> ORBSLAM3Interface::GetKeyFrames() const {
+        std::vector<ORB_SLAM3::KeyFrame*> keyframes(mpTracker->mlpReferences.begin(), mpTracker->mlpReferences.end());
+        return keyframes;
+    }
+
+    std::vector<double> ORBSLAM3Interface::GetFrameTimes() const {
+        std::vector<double> frameTimes(mpTracker->mlFrameTimes.begin(), mpTracker->mlFrameTimes.end());
+        return frameTimes;
     }
 
 }

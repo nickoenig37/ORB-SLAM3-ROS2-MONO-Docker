@@ -21,7 +21,15 @@ int main(int argc, char **argv)
     auto node = std::make_shared<ORB_SLAM3_Wrapper::RgbSlamNode>(argv[1], argv[2], ORB_SLAM3::System::MONOCULAR);
     std::cout << "============================ " << std::endl;
 
-    rclcpp::spin(node);
+    // Changed to multi-threaded executor for having the map as its own thread
+    // rclcpp::spin(node);
+    auto executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+    executor->add_node(node);
+    executor->spin();
+
+    // Call the function to save the trajectory
+    node->SaveTrajectoryTUM("/root/trajectory_save/traj_data.txt");
+
     rclcpp::shutdown();
 
     return 0;

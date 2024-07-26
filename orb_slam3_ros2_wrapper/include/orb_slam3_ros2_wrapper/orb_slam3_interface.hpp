@@ -26,10 +26,17 @@
 
 #include "sophus/se3.hpp"
 #include "System.h"
+#include "Tracking.h"
+
+#include "KeyFrame.h"
+
 #include "Frame.h"
 #include "Map.h"
 #include "Atlas.h"
 #include "orb_slam3_ros2_wrapper/type_conversion.hpp"
+
+#include <memory>
+#include <vector>
 
 namespace ORB_SLAM3_Wrapper
 {
@@ -54,8 +61,9 @@ namespace ORB_SLAM3_Wrapper
          * @param mapsList List of Map pointers.
          * @return Map of KeyFrame IDs and their pointers.
          */
-        std::map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList);
 
+        // std::map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList);
+        std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList); // For pcl viz
         /**
          * @brief Calculates reference poses for each map.
          */
@@ -86,6 +94,9 @@ namespace ORB_SLAM3_Wrapper
         // bool trackRGBDi(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
 
         // bool trackRGBD(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD, Sophus::SE3f &Tcw);
+        
+        std::vector<ORB_SLAM3::KeyFrame*> GetKeyFrames() const;
+        std::vector<double> GetFrameTimes() const;
 
     private:
         std::shared_ptr<ORB_SLAM3::System> mSLAM_;
@@ -100,16 +111,24 @@ namespace ORB_SLAM3_Wrapper
         queue<sensor_msgs::msg::Imu::SharedPtr> imuBuf_;
         std::mutex bufMutex_;
         std::mutex mapDataMutex_;
+        
+        std::mutex currentMapPointsMutex_; //for pcl viz w thread
 
-        std::map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_;
+        // std::map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_;
+        std::unordered_map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_; // For pcl viz
+
         std::mutex mapReferencesMutex_;
-        std::map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_;
+        // std::map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_;
+        std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_; // For pcl viz
+
         Eigen::Affine3d latestTrackedPose_;
         bool hasTracked_ = false;
         double robotX_, robotY_;
         std::string globalFrame_;
         std::string odomFrame_;
         std::string robotFrame_;
+
+        ORB_SLAM3::Tracking* mpTracker;
     };
 }
 
