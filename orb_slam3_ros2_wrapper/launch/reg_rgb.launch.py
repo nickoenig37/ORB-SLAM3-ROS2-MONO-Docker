@@ -46,7 +46,7 @@ def generate_launch_description():
 
     def all_nodes_launch(context):
         params_file = LaunchConfiguration('params_file')
-        vocabulary_file_path = "/home/orb/ORB_SLAM3/Vocabulary/ORBvoc.txt"
+        vocabulary_file_path = "/home/orb/ORB_SLAM3/Vocabulary/ORBvoc.txt" # This gets automatically uncompressed
         config_file_path = "/root/colcon_ws/src/orb_slam3_ros2_wrapper/params/rgb_gazebo_cal.yaml"
         # config_file_path = "/root/colcon_ws/src/orb_slam3_ros2_wrapper/params/rgb_rpi_cam_cal.yaml"
         declare_params_file_cmd = DeclareLaunchArgument(
