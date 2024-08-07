@@ -9,8 +9,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     # Set environment variables
-    #robot_namespace = "walle"
-    robot_namespace = ""
+    robot_namespace = "" # No Namespace being used in monocular configuration
     robot_x = "1.0"
     robot_y = "1.0"
 
@@ -19,9 +18,8 @@ def generate_launch_description():
 
     orb_slam3_launch_file_path = os.path.join(
             orb_slam3_launch_file_dir, 'reg_rgb.launch.py')
-            #orb_slam3_launch_file_dir, 'rgbd.launch.py')
 
-    # Launch the rgbd.launch.py file
+    # Launch the reg_rgb.launch.py file
     orb_slam3_launch_description = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(orb_slam3_launch_file_path)
     )
