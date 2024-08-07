@@ -1,7 +1,7 @@
 version: "3"
 services:
   orb_slam3_22_humble:
-    image: walle-orb-slam3-humble:22.04
+    image: orb-slam3-humble:22.04
     volumes:
       #full dev
       - /dev:/dev:rw
