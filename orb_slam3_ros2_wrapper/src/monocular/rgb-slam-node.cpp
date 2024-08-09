@@ -31,12 +31,25 @@ namespace ORB_SLAM3_Wrapper
         // ROS Publishers
         mapDataPub_ = this->create_publisher<slam_msgs::msg::MapData>("map_data", 10);
         mapPointsPub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("map_points", 10);
+
+#ifdef WITH_TRAVERSABILITY_MAP
+        // Not actually using this as a lidar sub but a pointcloud sub
+        lidarSub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>("lidar/points", 1000, std::bind(&RgbSlamNode::LidarCallback, this, std::placeholders::_1));
+        gridmapPub_ = this->create_publisher<nav_msgs::msg::OccupancyGrid>("traversability_grid", 10);
+        traversabilityPub_ = this->create_publisher<grid_map_msgs::msg::GridMap>("RTQuadtree_struct", rclcpp::QoS(1).transient_local());
+#endif
+
         // Services
         getMapDataService_ = this->create_service<slam_msgs::srv::GetMap>("orb_slam3_get_map_data", std::bind(&RgbSlamNode::getMapServer, this,
                                                                                                               std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         // Timers
         //  mapDataTimer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&RgbSlamNode::publishMapData, this));
-        
+                // Timers
+        mapDataTimer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&RgbSlamNode::publishMapData, this));
+
+#ifdef WITH_TRAVERSABILITY_MAP
+        traversabilityTimer_ = this->create_wall_timer(std::chrono::milliseconds(800), std::bind(&RgbSlamNode::publishTraversabilityData, this));
+#endif
         // TF
         tfBroadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(this);
         tfBuffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
@@ -111,7 +124,9 @@ namespace ORB_SLAM3_Wrapper
     }
 
     void RgbSlamNode::OdomCallback(const nav_msgs::msg::Odometry::SharedPtr msgOdom)
-    {
+    {   
+        std::lock_guard<std::mutex> lock(latestTimeMutex_);
+        latestTime_ = msgOdom->header.stamp;
         if(!no_odometry_mode_)
         {
             RCLCPP_DEBUG_STREAM(this->get_logger(), "OdomCallback");
@@ -142,6 +157,28 @@ namespace ORB_SLAM3_Wrapper
             // std::thread(&RgbdSlamNode::publishMapPointCloud, this).detach();
         }
     }
+
+#ifdef WITH_TRAVERSABILITY_MAP
+    void RgbSlamNode::LidarCallback(sensor_msgs::msg::PointCloud2 msgLidar)
+    {
+        // RCLCPP_INFO_STREAM(this->get_logger(), "PCLCallback");
+        interface_->handleLidarPCL(msgLidar.header.stamp, msgLidar);
+    }
+
+    void RgbdSlamNode::publishTraversabilityData()
+    {
+        std::lock_guard<std::mutex> lock(latestTimeMutex_);
+        auto map = interface_->getTraversabilityData();
+        // publish the gridmap and occupancy map.
+        map.first.info.origin.position.x = map.first.info.origin.position.x + robot_x_;
+        map.first.info.origin.position.y = map.first.info.origin.position.y + robot_y_;
+        map.first.header.frame_id = global_frame_;
+        map.first.header.stamp = latestTime_;
+        gridmapPub_->publish(map.first);
+        traversabilityPub_->publish(map.second);
+    }
+#endif
+
 
     void RgbSlamNode::publishMapPointCloud()
     {

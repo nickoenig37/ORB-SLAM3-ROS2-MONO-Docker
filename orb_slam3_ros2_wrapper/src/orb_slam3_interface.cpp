@@ -182,7 +182,7 @@ namespace ORB_SLAM3_Wrapper
                 }
             }
         }
-        mapDataMutex_.unlock();
+        // mapDataMutex_.unlock();
     }
 
     void ORBSLAM3Interface::correctTrackedPose(Sophus::SE3f &s)
@@ -291,6 +291,55 @@ namespace ORB_SLAM3_Wrapper
         imuBuf_.push(msgIMU);
         bufMutex_.unlock();
     }
+
+#ifdef WITH_TRAVERSABILITY_MAP
+    void ORBSLAM3Interface::handleLidarPCL(builtin_interfaces::msg::Time stamp, sensor_msgs::msg::PointCloud2 &pcl2)
+    {
+        (void)stamp;
+        mSLAM_->getTraversability()->pushToBuffer(pcl2);
+    }
+
+    std::pair<nav_msgs::msg::OccupancyGrid, grid_map_msgs::msg::GridMap> ORBSLAM3Interface::getTraversabilityData()
+    {
+        std::shared_ptr<grid_map::GridMap> traversabilitymap;
+        std::shared_ptr<nav_msgs::msg::OccupancyGrid> gridmap;
+        auto localMap = mSLAM_->getTraversability()->getLocalMap();
+        if (localMap != nullptr)
+        {
+            auto keyFramesMap_ = mSLAM_->getTraversability()->getLocalMap()->getKeyFramesMap();
+            for (auto &pair : keyFramesMap_)
+            {
+                auto keyFramePtr = pair.second;
+
+                // Check if the pointer is valid before calling recomputeCache
+                if (keyFramePtr)
+                {
+                    auto trav_done = mSLAM_->getTraversability()->getLocalMap()->getGridMap();
+                    auto gridmap_done = mSLAM_->getTraversability()->getLocalMap()->getOccupancyMap();
+                    if (trav_done)
+                    {
+                        traversabilitymap = trav_done;
+                        gridmap = gridmap_done;
+                    }
+                }
+            }
+            if (traversabilitymap && gridmap)
+            {
+                auto message = *grid_map::GridMapRosConverter::toMessage(*traversabilitymap);
+                return std::make_pair(*gridmap, message);
+            }
+            else
+            {
+                nav_msgs::msg::OccupancyGrid temp;
+                grid_map_msgs::msg::GridMap temp_grid;
+                return std::make_pair(temp, temp_grid);
+            }
+        }
+        nav_msgs::msg::OccupancyGrid temp;
+        grid_map_msgs::msg::GridMap temp_grid;
+        return std::make_pair(temp, temp_grid);
+    }
+#endif
 
     //  Made by Nick Koenig 
     bool ORBSLAM3Interface::trackRGB(const sensor_msgs::msg::Image::SharedPtr msgRGB, Sophus::SE3f &Tcw)

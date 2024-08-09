@@ -40,6 +40,15 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/orb_slam3_ros2_wrapper
 )
 
+find_package(traversability_mapping)
+if(traversability_mapping_FOUND)
+   find_package(grid_map_ros REQUIRED)
+    include_directories(
+    ${traversability_mapping_INCLUDE_DIRS}
+    )
+    ADD_DEFINITIONS("-DWITH_TRAVERSABILITY_MAP")
+endif(traversability_mapping_FOUND)
+
 link_directories(
   include
 )
@@ -51,7 +60,17 @@ add_executable(monocular
   src/monocular/rgb.cpp
 )
 
-ament_target_dependencies(monocular rclcpp sensor_msgs cv_bridge message_filters ORB_SLAM3 Pangolin tf2_ros tf2_eigen slam_msgs pcl_ros pcl_conversions PCL nav_msgs)
+if(traversability_mapping_FOUND)
+  ament_target_dependencies(monocular rclcpp sensor_msgs cv_bridge message_filters ORB_SLAM3 Pangolin tf2_ros tf2_eigen slam_msgs pcl_ros pcl_conversions PCL nav_msgs)
+else()
+  ament_target_dependencies(monocular rclcpp sensor_msgs cv_bridge message_filters ORB_SLAM3 Pangolin tf2_ros tf2_eigen slam_msgs pcl_ros pcl_conversions PCL nav_msgs)
+endif(traversability_mapping_FOUND)
+if(traversability_mapping_FOUND)
+   target_link_libraries(rgb
+   type_conversion
+   traversabilitySystem
+   )
+endif(traversability_mapping_FOUND)
 
 target_link_libraries(monocular ${PCL_LIBRARIES})
 install(TARGETS monocular

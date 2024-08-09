@@ -37,6 +37,10 @@
 #include "orb_slam3_ros2_wrapper/type_conversion.hpp"
 #include "orb_slam3_ros2_wrapper/orb_slam3_interface.hpp"
 
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2/convert.h>
+
 namespace ORB_SLAM3_Wrapper
 {
     class RgbSlamNode : public rclcpp::Node
@@ -55,12 +59,17 @@ namespace ORB_SLAM3_Wrapper
         void OdomCallback(const nav_msgs::msg::Odometry::SharedPtr msgOdom);
         void RGBCallback(const sensor_msgs::msg::Image::SharedPtr msgRGB);
 
+#ifdef WITH_TRAVERSABILITY_MAP
+        void LidarCallback(sensor_msgs::msg::PointCloud2 msgLidar);
+#endif
         /**
          * @brief Publishes map data. (Keyframes and all poses in the current active map.)
          * @param orb_atlas Pointer to the Atlas object.
          * @param last_init_kf_id ID of the last initialized keyframe.
          */
         void publishMapData();
+
+        void publishTraversabilityData();
 
         void publishMapPointCloud();
 
@@ -88,6 +97,13 @@ namespace ORB_SLAM3_Wrapper
         rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odomSub_;
         rclcpp::Publisher<slam_msgs::msg::MapData>::SharedPtr mapDataPub_;
         rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr mapPointsPub_;
+
+#ifdef WITH_TRAVERSABILITY_MAP
+        rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidarSub_;
+        rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr gridmapPub_;
+        rclcpp::Publisher<grid_map_msgs::msg::GridMap>::SharedPtr traversabilityPub_;
+#endif
+
         // TF
         std::shared_ptr<tf2_ros::TransformBroadcaster> tfBroadcaster_;
         std::shared_ptr<tf2_ros::TransformListener> tfListener_;
@@ -96,6 +112,10 @@ namespace ORB_SLAM3_Wrapper
         rclcpp::Service<slam_msgs::srv::GetMap>::SharedPtr getMapDataService_;
         // ROS Timers
         rclcpp::TimerBase::SharedPtr mapDataTimer_;
+
+#ifdef WITH_TRAVERSABILITY_MAP
+        rclcpp::TimerBase::SharedPtr traversabilityTimer_;
+#endif
 
         rclcpp::CallbackGroup::SharedPtr mapDataCallbackGroup_;
         rclcpp::TimerBase::SharedPtr mapPointsTimer_;
@@ -118,6 +138,9 @@ namespace ORB_SLAM3_Wrapper
         ORB_SLAM3_Wrapper::WrapperTypeConversions typeConversion_;
         std::shared_ptr<ORB_SLAM3_Wrapper::ORBSLAM3Interface> interface_;
         geometry_msgs::msg::TransformStamped tfMapOdom_;
+        
+        std::mutex latestTimeMutex_;
+        rclcpp::Time latestTime_;
     };
 }
 #endif
