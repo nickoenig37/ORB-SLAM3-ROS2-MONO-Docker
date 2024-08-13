@@ -24,4 +24,5 @@ services:
     tty: true
     environment:
       - DISPLAY
+      - LD_LIBRARY_PATH=/home/orb/ORB_SLAM3/lib:$LD_LIBRARY_PATH
     entrypoint: /bin/bash
