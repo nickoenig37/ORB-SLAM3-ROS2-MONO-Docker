@@ -81,7 +81,7 @@ Presently, this has been configured using Cyclone DDS only.
 1. Make sure that both the ORB-SLAM3 container and the external ROS2 have the same `ROS_DOMAIN_ID` set-up.
 
 1. ORB-SLAM3 container is already configured to use Cyclone DDS.
-The external ROS2 has to have the following steps configured, as detailed in <https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker/issues/8#issuecomment-2187977113>
+    The external ROS2 has to have the following steps configured, as detailed in <https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker/issues/8#issuecomment-2187977113>
 
 1. Install Cyclone DDS:
 
