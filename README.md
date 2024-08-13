@@ -67,34 +67,77 @@ source install/setup.bash
 
 Launch the container using steps in (4).
 If you are inside the container, run the following:
-```ros2 launch orb_slam3_ros2_wrapper rgb_unirobot.launch.py```
--- The world being launched can be changed
 
-## Running this with a Gazebo Classic simulation
+```bash
+ros2 launch orb_slam3_ros2_wrapper rgb_unirobot.launch.py
+```
 
-Setup the ORB-SLAM3 ROS2 Docker using the steps above. Once you do (1) step in the ```Launching ORB-SLAM3``` section, you should see a window popup which is waiting for images. This is partially indicative of the setup correctly done. However, I recommend you run your simulation first and then run the ORB-SLAM3 wrapper for monocular.
+## Interfacing ORB-SLAM3 nodes with external ROS2 processes
 
-* NOTE: for a monocular camera, you need multiple keyframes to begin tracking. So, you may need to move the camera around a bit to get the ORB-SLAM3 to start tracking.
+To make ORB-SLAM3 read from an external ROS2 simulation (or hardware teleoperation), one needs to ensure that the Docker container running ORB-SLAM3 and the external ROS2 are communicating correctly.
+
+Presently, this has been configured using Cyclone DDS only.
+
+1. Make sure that both the ORB-SLAM3 container and the external ROS2 have the same `ROS_DOMAIN_ID` set-up.
+
+1. ORB-SLAM3 container is already configured to use Cyclone DDS.
+The external ROS2 has to have the following steps configured, as detailed in <https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker/issues/8#issuecomment-2187977113>
+
+1. Install Cyclone DDS:
+
+  ```bash
+  sudo apt-get install -y ros-humble-rmw-cyclonedds-cpp 
+  ```
+
+1. Create the Cyclone DDS configuration file in user's home folder (`~/.ros/cyclonedds.xml`) containing the following configuration:
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <CycloneDDS xmlns="https://cdds.io/config"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <Domain id="any">
+          <General>
+              <NetworkInterfaceAddress>auto</NetworkInterfaceAddress>
+              <AllowMulticast>false</AllowMulticast>
+          </General>
+          <Discovery>
+              <ParticipantIndex>auto</ParticipantIndex>
+              <MaxAutoParticipantIndex>100</MaxAutoParticipantIndex>
+              <Peers>
+                  <Peer Address="localhost" />
+              </Peers>
+          </Discovery>
+      </Domain>
+  </CycloneDDS>
+  ```
+
+1. Set up the following environment variables, e.g., in `.bashrc` add:
+
+  ```bash
+
+  export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  export CYCLONEDDS_URI=~/.ros/cyclonedds.xml
+
+  ```
+
+1. Setup the ORB-SLAM3 ROS2 Docker using the steps above. Once you do (1) step in the ```Launching ORB-SLAM3``` section, you should see a window popup which is waiting for images. This is partially indicative of the setup correctly done. However, I recommend you run your simulation first and then run the ORB-SLAM3 wrapper for monocular.
+
+- NOTE: for a monocular camera, you need multiple keyframes to begin tracking. So, you may need to move the camera around a bit to get the ORB-SLAM3 to start tracking.
 
 If you're having issues interfacing between your simulation and the ROS2 communication side of things see the potential issues section below!
 
 ## Making Changes & Managing the Workspace
 
-* For starters, all changed code is in the ```orb_slam3_ros2_wrapper``` directory. This is where you will be making changes to the ORB-SLAM3 wrapper, the ```ORB_SLAM3``` directory is the original codebase and should not be modified.
-* For managing sensors being used by the algorithm, see the "ROS Parameter descriptions" section below. These paramater files are initialized in the `reg_rgb.launch.py` file.
-* For changing topic names to subscribe to, go to orb_slam3_ros2_wrapper/src/monocular/rgb-slam-node.cpp
-* The algorithm is much better when using your own camera calibration file. I recommend following these instructions to calibrate the camera: `https://docs.ros.org/en/rolling/p/camera_calibration/tutorial_mono.html`
-  * Take the values this calibration gave you and make the corresponding changes to the format of an existing file. If you don't understand the format value differences between files, I recommend giving both of them to GPT and asking it to write your values to the correct file format.
-  * For calibrating your camera in gazebo I recommend following this link: `https://medium.com/@arshad.mehmood/camera-calibration-in-gazebo-ros2-6bed2620a652`
+- For starters, all changed code is in the ```orb_slam3_ros2_wrapper``` directory. This is where you will be making changes to the ORB-SLAM3 wrapper, the ```ORB_SLAM3``` directory is the original codebase and should not be modified.
+- For managing sensors being used by the algorithm, see the "ROS Parameter descriptions" section below. These paramater files are initialized in the `reg_rgb.launch.py` file.
+- For changing topic names to subscribe to, go to orb_slam3_ros2_wrapper/src/monocular/rgb-slam-node.cpp
+- The algorithm is much better when using your own camera calibration file. I recommend following these instructions to calibrate the camera: `https://docs.ros.org/en/rolling/p/camera_calibration/tutorial_mono.html`
+  - Take the values this calibration gave you and make the corresponding changes to the format of an existing file. If you don't understand the format value differences between files, I recommend giving both of them to GPT and asking it to write your values to the correct file format.
+  - For calibrating your camera in gazebo I recommend following this link: `https://medium.com/@arshad.mehmood/camera-calibration-in-gazebo-ros2-6bed2620a652`
 
 ### Potential issues you may face
 
 The simulation and the wrapper both have their ```ROS_DOMAIN_ID``` set to 55 so they are meant to work out of the box. However, you may face issues if this environment variable is not set properly. Before you start the wrapper, run ```ros2 topic list``` and make sure the topics namespaced with ```scout_2``` are visible inside the ORB-SLAM3 container provided the simulation is running along the side.
-
-* If you are trying to setup this container with a local simulation, you are going to need to use cyclone_rmw because fast seems to have issues with this.
-
-* This link goes through the mentioned error: <https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker/issues/8>
-But you want to go into your directory for the container, cd /container_root/.ros and add the cyclonedds.xml file mentioned in that post, along with the other instructions for your local machine and .bashrc file.
 
 ## ROS Parameter descriptions
 
