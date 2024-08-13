@@ -25,4 +25,5 @@ services:
     environment:
       - DISPLAY
       - LD_LIBRARY_PATH=/home/orb/ORB_SLAM3/lib:$LD_LIBRARY_PATH
+      - ROS_DOMAIN_ID
     entrypoint: /bin/bash
