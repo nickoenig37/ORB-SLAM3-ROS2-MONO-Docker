@@ -97,9 +97,9 @@ namespace ORB_SLAM3_Wrapper
         // ROS Timers
         rclcpp::TimerBase::SharedPtr mapDataTimer_;
 
-        rclcpp::CallbackGroup::SharedPtr mapDataCallbackGroup_;
-        rclcpp::TimerBase::SharedPtr mapPointsTimer_;
-        rclcpp::CallbackGroup::SharedPtr mapPointsCallbackGroup_;
+        // rclcpp::CallbackGroup::SharedPtr mapDataCallbackGroup_;
+        // rclcpp::TimerBase::SharedPtr mapPointsTimer_;
+        // rclcpp::CallbackGroup::SharedPtr mapPointsCallbackGroup_;
 
         // ROS Params
         std::string robot_base_frame_id_;
@@ -110,10 +110,10 @@ namespace ORB_SLAM3_Wrapper
         bool isTracked_ = false;
         bool no_odometry_mode_;
 
-        double frequency_tracker_count_ = 0;
-        int map_data_publish_frequency_;
-        int landmark_publish_frequency_;
-        std::chrono::_V2::system_clock::time_point frequency_tracker_clock_;
+        // double frequency_tracker_count_ = 0;
+        // int map_data_publish_frequency_;
+        // int landmark_publish_frequency_;
+        // std::chrono::_V2::system_clock::time_point frequency_tracker_clock_;
 
         ORB_SLAM3_Wrapper::WrapperTypeConversions typeConversion_;
         std::shared_ptr<ORB_SLAM3_Wrapper::ORBSLAM3Interface> interface_;

@@ -44,11 +44,11 @@ namespace ORB_SLAM3_Wrapper
         allKFs_.clear();
     }
 
-    // std::map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList)
-    std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList) // For pcl viz
+    std::map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList)
+    // std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> ORBSLAM3Interface::makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList) // For pcl viz
     {
-        // map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
-        std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
+        std::map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
+        // std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> mpIdKFs;
 
         for (ORB_SLAM3::Map *pMap_i : mapsList)
         {
@@ -115,28 +115,28 @@ namespace ORB_SLAM3_Wrapper
 
     void ORBSLAM3Interface::getCurrentMapPoints(sensor_msgs::msg::PointCloud2 &mapPointCloud)
     {   
-        std::lock_guard<std::mutex> lock(currentMapPointsMutex_); // For pcl viz w thread
+        // std::lock_guard<std::mutex> lock(currentMapPointsMutex_); // For pcl viz w thread
         // this flag serves to support
 
         std::vector<Eigen::Vector3f> trackedMapPoints;
-        // for (auto KF : orbAtlas_->GetAllKeyFrames())
-        auto atlasAllKFs_ = orbAtlas_->GetAllKeyFrames();
-        for (auto& KF : atlasAllKFs_)
+        for (auto KF : orbAtlas_->GetAllKeyFrames())
+        // auto atlasAllKFs_ = orbAtlas_->GetAllKeyFrames();
+        // for (auto& KF : atlasAllKFs_)
         {
-            // for (auto mapPoint : KF->GetMapPoints())
-            for (auto& mapPoint : KF->GetMapPoints()) // For pcl viz
+            for (auto mapPoint : KF->GetMapPoints())
+            // for (auto& mapPoint : KF->GetMapPoints()) // For pcl viz
             {
                 if (!mapPoint->isBad())
                 {
                     auto worldPos = typeConversions_->vector3fORBToROS(mapPoint->GetWorldPos());
                     mapReferencesMutex_.lock();
 
-                    // Added for mapping pcl's 
-                    if(allKFs_.count(KF->mnId) == 0)
-                    {
-                        mapReferencesMutex_.unlock();
-                        continue;
-                    }
+                    // // Added for mapping pcl's 
+                    // if(allKFs_.count(KF->mnId) == 0)
+                    // {
+                    //     mapReferencesMutex_.unlock();
+                    //     continue;
+                    // }
 
                     auto mapPointWorld = typeConversions_->transformPointWithReference<Eigen::Vector3f>(mapReferencePoses_[allKFs_[KF->mnId]->GetMap()], worldPos);
                     mapReferencesMutex_.unlock();

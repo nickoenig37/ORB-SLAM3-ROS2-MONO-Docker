@@ -57,8 +57,8 @@ namespace ORB_SLAM3_Wrapper
          * @return Map of KeyFrame IDs and their pointers.
          */
 
-        // std::map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList);
-        std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList); // For pcl viz
+        std::map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList);
+        // std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> makeKFIdPair(std::vector<ORB_SLAM3::Map *> mapsList); // For pcl viz
         /**
          * @brief Calculates reference poses for each map.
          */
@@ -104,14 +104,14 @@ namespace ORB_SLAM3_Wrapper
         std::mutex bufMutex_;
         std::mutex mapDataMutex_;
         
-        std::mutex currentMapPointsMutex_; //for pcl viz w thread
+        // std::mutex currentMapPointsMutex_; //for pcl viz w thread
 
-        // std::map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_;
-        std::unordered_map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_; // For pcl viz
+        std::map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_;
+        // std::unordered_map<ORB_SLAM3::Map *, Eigen::Affine3d> mapReferencePoses_; // For pcl viz
 
         std::mutex mapReferencesMutex_;
-        // std::map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_;
-        std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_; // For pcl viz
+        std::map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_;
+        // std::unordered_map<long unsigned int, ORB_SLAM3::KeyFrame *> allKFs_; // For pcl viz
 
         Eigen::Affine3d latestTrackedPose_;
         bool hasTracked_ = false;

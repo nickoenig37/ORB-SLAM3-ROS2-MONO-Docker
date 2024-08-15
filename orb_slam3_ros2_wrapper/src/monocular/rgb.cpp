@@ -22,10 +22,10 @@ int main(int argc, char **argv)
     std::cout << "============================ " << std::endl;
 
     // Changed to multi-threaded executor for having the map as its own thread
-    // rclcpp::spin(node);
-    auto executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
-    executor->add_node(node);
-    executor->spin();
+    rclcpp::spin(node);
+    // auto executor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+    // executor->add_node(node);
+    // executor->spin();
 
     rclcpp::shutdown();
 
