@@ -131,6 +131,8 @@ If you're having issues interfacing between your simulation and the ROS2 communi
 - For starters, all changed code is in the ```orb_slam3_ros2_wrapper``` directory. This is where you will be making changes to the ORB-SLAM3 wrapper, the ```ORB_SLAM3``` directory is the original codebase and should not be modified.
 - For managing sensors being used by the algorithm, see the "ROS Parameter descriptions" section below. These paramater files are initialized in the `reg_rgb.launch.py` file.
 - For changing topic names to subscribe to, go to orb_slam3_ros2_wrapper/src/monocular/rgb-slam-node.cpp
+
+## Camera Calibration and Gazebo Camera Calibration
 - The algorithm is much better when using your own camera calibration file. I recommend following these instructions to calibrate the camera: `https://docs.ros.org/en/rolling/p/camera_calibration/tutorial_mono.html`
   - Take the values this calibration gave you and make the corresponding changes to the format of an existing file. If you don't understand the format value differences between files, I recommend giving both of them to GPT and asking it to write your values to the correct file format.
   - For calibrating your camera in gazebo I recommend following this link: `https://medium.com/@arshad.mehmood/camera-calibration-in-gazebo-ros2-6bed2620a652`
