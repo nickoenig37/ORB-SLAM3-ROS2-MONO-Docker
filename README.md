@@ -1,23 +1,25 @@
 # ORB-SLAM3 ROS2 Wrapper Docker
 
-This repository contains a dockerized comprehensive wrapper for ORB-SLAM3 on ROS 2 Humble for Ubuntu 22.04.
+This repository contains a dockerized comprehensive wrapper for ORB-SLAM3 using a monocular camera on ROS 2 Humble for Ubuntu 22.04. This repository was adapted from a dockerized rgbd implementation of ORB-SLAM3 at <https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker>
 
 # Demo GIF
 
-![ORBSLAM3-GIF](orbslam3.gif)
+![ORBSLAM3-GIF](ORBSLAM_Moving.gif)
 
 # Steps to use this wrapper
 
 ## 1. Clone this repository
 
-1. ```git clone https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker```
-2. ```cd ORB-SLAM3-ROS2-Docker```
-3. ```git submodule update --init --recursive --remote```
+```bash
+    git clone <copy https or ssh repository location>
+    cd ORB-SLAM3-ROS2-MONO-Docker
+    git submodule update --init --recursive --remote
+```
 
-## 2. Install Docker on your system
+## 2. Install Docker on your system (if not already installed)
 
 ```bash
-cd ORB-SLAM3-ROS2-Docker
+cd ORB-SLAM3-ROS2-MONO-Docker
 sudo chmod +x container_root/shell_scripts/docker_install.sh
 ./container_root/shell_scripts/docker_install.sh
 ```
@@ -25,52 +27,118 @@ sudo chmod +x container_root/shell_scripts/docker_install.sh
 ## 3. Build the image with ORB_SLAM3
 
 1. Build the image: ```sudo docker build -t orb-slam3-humble:22.04 .```
-2. Add ```xhost +``` to your ```.bashrc``` to support correct x11-forwarding using ```echo "xhost +" >> ~/.bashrc```
-3. ```source ~/.bashrc```
-4. You can see the built images on your machine by running ```sudo docker images```.
+1. Add ```xhost +``` to your ```.bashrc``` to support correct x11-forwarding using ```echo "xhost +" >> ~/.bashrc```
+1. ```source ~/.bashrc```
+1. You can see the built images on your machine by running ```sudo docker images```.
 
 ## 4. Running the container
 
 1. ```cd ORB-SLAM3-ROS2-Docker``` (ignore if you are already in the folder)
 2. ```sudo docker compose run orb_slam3_22_humble```
-3. This should take you inside the container. Once you are inside, run the command ```xeyes``` and a pair of eyes should pop-up. If they do, x11 forwarding has correctly been setup on your computer.
+3. This should take you inside the container. Once you are inside, run the command ```xeyes``` and a pair of eyes should pop-up. If they do, x11 forwarding has correctly been setup on your computer. (Ignore the message:
+
+```bash
+bash: /root/colcon_ws/install/setup.bash: No such file or directory
+```
+
+It should go away once you complete the next step.)
 
 ## 5. Building the ORB-SLAM3 Wrapper
 
 Launch the container using steps in (4).
+
 ```bash
 cd /root/colcon_ws/
 colcon build --symlink-install
+```
+
+The build process may emit warnings associated with `-Wreorder`, `-Wunused-parameter` and similar compiler flags.
+You can ignore them.
+
+If there are no errors (in addition to warnings above) then you can source the install script"
+
+```bash
 source install/setup.bash
 ```
+
+# Container Information (Editing and Launching Files)
 
 ## Launching ORB-SLAM3
 
 Launch the container using steps in (4).
 If you are inside the container, run the following:
 
-1. ```ros2 launch orb_slam3_ros2_wrapper unirobot.launch.py```
-3. You can adjust the initial co-ordinates of the robot along with its namespace in the ```unirobot.launch.py``` file.
+```bash
+ros2 launch orb_slam3_ros2_wrapper rgb_unirobot.launch.py
+```
 
-## Running this with a Gazebo Classic simulation.
+## Interfacing ORB-SLAM3 nodes with external ROS2 processes
 
-1. Setup the ORB-SLAM3 ROS2 Docker using the steps above. Once you do (1) step in the ```Launching ORB-SLAM3``` section, you should see a window popup which is waiting for images. This is partially indicative of the setup correctly done.
-2. Setup the simulation by following the README [here](https://github.com/suchetanrs/scout-husky-gazebo-ros2)
-3. Once you are able to teleop the robot, you should be able to run ORB-SLAM3 with both the containers (simulation and wrapper) running parallely.
+To make ORB-SLAM3 read from an external ROS2 simulation (or hardware teleoperation), one needs to ensure that the Docker container running ORB-SLAM3 and the external ROS2 are communicating correctly.
 
-### Potential issues you may face.
-The simulation and the wrapper both have their ```ROS_DOMAIN_ID``` set to 55 so they are meant to work out of the box. However, you may face issues if this environment variable is not set properly. Before you start the wrapper, run ```ros2 topic list``` and make sure the topics namespaced with ```scout_2``` are visible inside the ORB-SLAM3 container provided the simulation is running along the side.
+Presently, this has been configured using Cyclone DDS only.
 
+1. Make sure that both the ORB-SLAM3 container and the external ROS2 have the same `ROS_DOMAIN_ID` set-up.
 
-## Important notes
+1. ORB-SLAM3 container is already configured to use Cyclone DDS.
+    The external ROS2 has to have the following steps configured, as detailed in <https://github.com/suchetanrs/ORB-SLAM3-ROS2-Docker/issues/8#issuecomment-2187977113>
 
-ORB-SLAM3 is launched from ```orb_slam3_docker_20_humble/orb_slam3_ros2_wrapper/launch/rgbd.launch.py``` which inturn is launched from ```orb_slam3_docker_20_humble/orb_slam3_ros2_wrapper/launch/unirobot.launch.py```
+1. Install Cyclone DDS:
 
-Currently the ```rgbd.launch.py``` launch file defaults to ```orb_slam3_ros2_wrapper/params/scout_v2_rgbd.yaml```. You can modify this with your own parameter file in case you wish to use your own camera.
+  ```bash
+  sudo apt-get install -y ros-humble-rmw-cyclonedds-cpp 
+  ```
 
-The very initial versions of this code were derived from [thien94/orb_slam3_ros_wrapper](https://github.com/thien94/orb_slam3_ros_wrapper) and [zang9/ORB_SLAM3_ROS2](https://github.com/zang09/ORB_SLAM3_ROS2)
+1. Create the Cyclone DDS configuration file in user's home folder (`~/.ros/cyclonedds.xml`) containing the following configuration:
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8" ?>
+  <CycloneDDS xmlns="https://cdds.io/config"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <Domain id="any">
+          <General>
+              <NetworkInterfaceAddress>auto</NetworkInterfaceAddress>
+              <AllowMulticast>false</AllowMulticast>
+          </General>
+          <Discovery>
+              <ParticipantIndex>auto</ParticipantIndex>
+              <MaxAutoParticipantIndex>100</MaxAutoParticipantIndex>
+              <Peers>
+                  <Peer Address="localhost" />
+              </Peers>
+          </Discovery>
+      </Domain>
+  </CycloneDDS>
+  ```
+
+1. Set up the following environment variables, e.g., in `.bashrc` add:
+
+  ```bash
+
+  export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  export CYCLONEDDS_URI=~/.ros/cyclonedds.xml
+
+  ```
+
+1. Setup the ORB-SLAM3 ROS2 Docker using the steps above. Once you do (1) step in the ```Launching ORB-SLAM3``` section, you should see a window popup which is waiting for images. This is partially indicative of the setup correctly done. However, I recommend you run your simulation first and then run the ORB-SLAM3 wrapper for monocular.
+
+- NOTE: for a monocular camera, you need multiple keyframes to begin tracking. So, you may need to move the camera around a bit to get the ORB-SLAM3 to start tracking.
+
+If you're having issues interfacing between your simulation and the ROS2 communication side of things see the potential issues section below!
+
+## Making Changes & Managing the Workspace
+
+- For starters, all changed code is in the ```orb_slam3_ros2_wrapper``` directory. This is where you will be making changes to the ORB-SLAM3 wrapper, the ```ORB_SLAM3``` directory is the original codebase and should not be modified.
+- For managing sensors being used by the algorithm, see the "ROS Parameter descriptions" section below. These paramater files are initialized in the `reg_rgb.launch.py` file.
+- For changing topic names to subscribe to, go to orb_slam3_ros2_wrapper/src/monocular/rgb-slam-node.cpp
+
+## Camera Calibration and Gazebo Camera Calibration
+- The algorithm is much better when using your own camera calibration file. I recommend following these instructions to calibrate the camera: `https://docs.ros.org/en/rolling/p/camera_calibration/tutorial_mono.html`
+  - Take the values this calibration gave you and make the corresponding changes to the format of an existing file. If you don't understand the format value differences between files, I recommend giving both of them to GPT and asking it to write your values to the correct file format.
+  - For calibrating your camera in gazebo I recommend following this link: `https://medium.com/@arshad.mehmood/camera-calibration-in-gazebo-ros2-6bed2620a652`
 
 ## ROS Parameter descriptions
+
 | Parameter Name          | Default Value | Description                                                                 |
 |-------------------------|---------------|-----------------------------------------------------------------------------|
 | `robot_base_frame`      | `base_footprint` | The name of the frame attached to the robot's base. |

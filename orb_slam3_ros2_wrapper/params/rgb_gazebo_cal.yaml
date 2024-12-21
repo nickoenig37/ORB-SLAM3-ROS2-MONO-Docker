@@ -1,0 +1,76 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+# File.version: "1.0"
+
+Camera.type: "PinHole"
+
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 528.111257
+Camera.fy: 528.113200
+Camera.cx: 319.464478
+Camera.cy: 239.478788
+
+# distortion parameters
+Camera.k1: 0.000016
+Camera.k2: 0.000989
+Camera.p1: 0.000002
+Camera.p2: -0.000142
+Camera.k3: 0.000000
+
+# Camera resolution
+Camera.width: 640
+Camera.height: 480
+
+# Camera frames per second 
+Camera.fps: 30  # Adjust this to your camera's frame rate
+
+# IR projector baseline times fx (approx.)
+Camera.bf: 0  # Set if you have stereo setup, otherwise keep as 0
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1  # Set according to your camera output
+
+# Depth map values factor (TODO: MAYBE TRY GOING TO 0.5)
+DepthMapFactor: 0.3  # Set this according to your depth data
+
+
+# Adding this to see if it makes succinct difference
+# Insert KFs when recently lost () (idk if 1 or 0 is on or off)
+InsertKFsWhenLost: 1
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 1000  # Increase if you need more features
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
+ORBextractor.scaleFactor: 1.1  # Adjust this for better pyramid levels
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 8  # Default number of levels
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast			
+ORBextractor.iniThFAST: 20  # Adjust according to your image contrast
+ORBextractor.minThFAST: 7  # Adjust according to your image contrast
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500

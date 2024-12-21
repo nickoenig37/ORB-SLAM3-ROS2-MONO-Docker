@@ -97,6 +97,12 @@ fi
 #if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 #    . /etc/bash_completion
 #fi
+
+# Need cyclone for comm between local and container
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+export CYCLONEDDS_URI=~/.ros/cyclonedds.xml
+#export ROS_DOMAIN_ID=55
+
 export XDG_RUNTIME_DIR=/tmp/runtime-root
 alias ranger='ranger --choosedir=/root/.rangerdir; LASTDIR=`cat /root/.rangerdir`; cd $LASTDIR'
 alias cdros='cd /root/colcon_ws/'
@@ -105,8 +111,8 @@ alias sros='source /opt/ros/humble/setup.bash'
 alias vsc='code --no-sandbox --disable-gpu-sandbox --user-data-dir=/tmp/vscode .'
 alias sep='echo "================================================================="'
 source /opt/ros/humble/setup.bash
-export SCOUT_NAMESPACE=scout_2
-export ROS_DOMAIN_ID=55
+#export SCOUT_NAMESPACE=scout_2
+#export ROS_DOMAIN_ID=55
 export RCUTILS_COLORIZED_OUTPUT=1
 cd
 sros

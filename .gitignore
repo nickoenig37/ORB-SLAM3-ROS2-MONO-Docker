@@ -2,6 +2,10 @@ container_root/colcon_ws/build/
 container_root/colcon_ws/install/
 container_root/colcon_ws/log/
 container_root/colcon_ws/src/
+**/build/
+**/install/
+**/log/
+**/.bash_history
 container_root/.cache/
 container_root/.cache/
 container_root/.config/
