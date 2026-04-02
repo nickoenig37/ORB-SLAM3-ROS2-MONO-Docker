@@ -498,3 +498,51 @@ ls
 tmux
 ls
 ros2 launch orb_slam3_ros2_wrapper unirobot.launch.py 
+rviz2 -d orb_slam3.rviz
+ros2 launch orb_slam3_map_generator map_generator.launch.py
+python3 colcon_ws/src/orb_slam3_map_generator/scripts/stitch_pcl_client.py 
+terminator
+which terminator
+echo $DISPLAY
+hostname
+apt update && apt install -y terminator
+mkdir -p ~/.config/terminator
+terminator &
+git status
+ls
+launch_slam.sh
+./launch_slam.sh 
+nano ~/.bashrc
+ls
+echo $ROS_DOMAIN_ID 
+l
+echo $CYCLONEDDS_URI 
+nano /root/.ros/cyclonedds.xml
+ros2 daemon stop
+ros2 daemon start
+ros2 node list
+ls
+ros2 node list
+ros2 daemon stop
+ros2 daemon start
+ros2 node list
+ros2 topic list
+ros2 topic echo /random_topic 
+apt-cache policy libsophus-dev | cat
+apt-cache search sophus | cat
+find /usr /opt /usr/local -type f \( -name 'SophusConfig.cmake' -o -name 'sophus-config.cmake' \) 2>/dev/null | head -n 50
+ls /opt/ros 2>/dev/null || true
+apt-get update
+apt-get install -y ros-humble-sophus
+find /opt/ros/humble -type f \( -name 'SophusConfig.cmake' -o -name 'sophus-config.cmake' -o -name '*sophus*Config.cmake' \) 2>/dev/null | head -n 20
+cd /root/colcon_ws
+source /opt/ros/humble/setup.bash
+colcon build --packages-select orb_slam3_ros2_wrapper orb_slam3_map_generator --event-handlers console_direct+
+readlink -f /root/colcon_ws/log/latest_build || true
+find /root/colcon_ws/log/latest_build -maxdepth 3 -type f -name stderr.log -o -name stdout.log 2>/dev/null | head -n 20
+rm -rf /tmp/sophus_check && mkdir -p /tmp/sophus_check
+cd /tmp/sophus_check
+cmake -S /root/colcon_ws/src/orb_slam3_ros2_wrapper -B build -DCMAKE_PREFIX_PATH=/opt/ros/humble 2>&1 | grep -E "Sophus|Could not find|find_package|Config.cmake|error|Error" -i | tail -n 80 || true
+cd /home/orb/ORB_SLAM3
+chmod +x build.sh
+./build.sh

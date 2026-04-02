@@ -124,6 +124,7 @@ namespace ORB_SLAM3_Wrapper
         bool isTracked_ = false;
         bool odometry_mode_;
         bool publish_tf_;
+        bool use_imu_;
         double frequency_tracker_count_ = 0;
         int map_data_publish_frequency_;
         bool do_loop_closing_;

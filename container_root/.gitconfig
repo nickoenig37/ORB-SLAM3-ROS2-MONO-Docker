@@ -1,2 +1,14 @@
 [safe]
 	directory = /home/orb/ORB_SLAM3
+[user]
+	email = nic.koenig37@gmail.com
+	name = Nick
+[pull]
+	rebase = false
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[credential]
+	helper = "!f() { /root/.vscode-server/bin/c9d77990917f3102ada88be140d28b038d1dd7c7/node /tmp/vscode-remote-containers-cdd752fc-76c4-4d92-8963-f5df51317c0e.js git-credential-helper $*; }; f"

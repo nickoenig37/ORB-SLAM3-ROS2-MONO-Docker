@@ -3,7 +3,7 @@
   <Domain id="any">
     <General>
       <NetworkInterfaceAddress>auto</NetworkInterfaceAddress>
-      <AllowMulticast>true</AllowMulticast>
+      <AllowMulticast>false</AllowMulticast>
     </General>
     <Discovery>
       <ParticipantIndex>auto</ParticipantIndex>

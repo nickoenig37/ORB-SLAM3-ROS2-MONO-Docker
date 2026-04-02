@@ -64,6 +64,15 @@ add_executable(rgbd
 )
 ament_target_dependencies(rgbd rclcpp sensor_msgs cv_bridge message_filters ORB_SLAM3 Pangolin tf2_ros tf2_eigen slam_msgs pcl_ros pcl_conversions PCL nav_msgs std_srvs)
 
+add_executable(rgbd_imu
+  src/type_conversion.cpp
+  src/orb_slam3_interface.cpp
+  src/time_profiler.cpp
+  src/rgbd/rgbd-slam-node.cpp
+  src/rgbd/rgbd_imu.cpp
+)
+ament_target_dependencies(rgbd_imu rclcpp sensor_msgs cv_bridge message_filters ORB_SLAM3 Pangolin tf2_ros tf2_eigen slam_msgs pcl_ros pcl_conversions PCL nav_msgs std_srvs)
+
 # add_executable(test1
 #   src/ft.cpp
 #   src/test_frame.cpp
@@ -72,7 +81,8 @@ ament_target_dependencies(rgbd rclcpp sensor_msgs cv_bridge message_filters ORB_
 # ament_target_dependencies(test1 rclcpp sensor_msgs cv_bridge message_filters ORB_SLAM3 Pangolin tf2_ros tf2_eigen slam_msgs pcl_ros pcl_conversions PCL nav_msgs)
 # test1
 target_link_libraries(rgbd ${PCL_LIBRARIES})
-install(TARGETS rgbd
+target_link_libraries(rgbd_imu ${PCL_LIBRARIES})
+install(TARGETS rgbd rgbd_imu
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch params

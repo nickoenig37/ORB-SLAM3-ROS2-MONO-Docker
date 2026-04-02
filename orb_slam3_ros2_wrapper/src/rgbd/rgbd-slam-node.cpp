@@ -16,8 +16,10 @@ namespace ORB_SLAM3_Wrapper
     {
         // Declare parameters (topic names)
         this->declare_parameter("rgb_image_topic_name", rclcpp::ParameterValue("camera/image_raw"));
-        this->declare_parameter("depth_image_topic_name", rclcpp::ParameterValue("depth/image_raw"));
-        this->declare_parameter("imu_topic_name", rclcpp::ParameterValue("imu"));
+        this->declare_parameter("depth_image_topic_name", rclcpp::ParameterValue("camera/depth/image_raw"));
+        this->declare_parameter("imu_topic_name", rclcpp::ParameterValue("/imu/data"));
+        this->declare_parameter("use_imu", rclcpp::ParameterValue(false));
+        this->get_parameter("use_imu", use_imu_);
 
         // ROS Subscribers
         rgbSub_ = std::make_shared<message_filters::Subscriber<sensor_msgs::msg::Image>>(this, this->get_parameter("rgb_image_topic_name").as_string());
@@ -118,7 +120,11 @@ namespace ORB_SLAM3_Wrapper
         frequency_tracker_count_ = 0;
         frequency_tracker_clock_ = std::chrono::high_resolution_clock::now();
 
-        RCLCPP_INFO(this->get_logger(), "CONSTRUCTOR END!");
+        RCLCPP_INFO(this->get_logger(), "RGBD node started. RGB topic: %s | Depth topic: %s | IMU topic: %s | use_imu: %s",
+                this->get_parameter("rgb_image_topic_name").as_string().c_str(),
+                this->get_parameter("depth_image_topic_name").as_string().c_str(),
+                this->get_parameter("imu_topic_name").as_string().c_str(),
+                use_imu_ ? "true" : "false");
     }
 
     RgbdSlamNode::~RgbdSlamNode()
@@ -141,7 +147,10 @@ namespace ORB_SLAM3_Wrapper
     void RgbdSlamNode::RGBDCallback(const sensor_msgs::msg::Image::SharedPtr msgRGB, const sensor_msgs::msg::Image::SharedPtr msgD)
     {
         Sophus::SE3f Tcw;
-        if (interface_->trackRGBD(msgRGB, msgD, Tcw))
+        const bool tracked = use_imu_ ? interface_->trackRGBDi(msgRGB, msgD, Tcw)
+                                      : interface_->trackRGBD(msgRGB, msgD, Tcw);
+
+        if (tracked)
         {
             isTracked_ = true;
             // if tf publishing is enabled, move into this block.
