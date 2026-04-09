@@ -14,7 +14,7 @@
   <depend>cv_bridge</depend>
   <depend>message_filters</depend>
   <depend>Pangolin</depend>
-  <depend>Sophus</depend>
+  <depend>sophus</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_eigen</depend>
   <depend>slam_msgs</depend>

@@ -32,6 +32,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(message_filters REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Pangolin REQUIRED)
 find_package(Sophus REQUIRED)
 find_package(ORB_SLAM3 REQUIRED)
@@ -57,6 +58,7 @@ include_directories(
   include
   ${ORB_SLAM3_ROOT_DIR}/include
   ${ORB_SLAM3_ROOT_DIR}/include/CameraModels
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
@@ -67,30 +69,46 @@ link_directories(
   include
 )
 
-set(dependencies 
+set(core_dependencies 
   rclcpp 
   sensor_msgs 
-  cv_bridge 
   message_filters 
   ORB_SLAM3 
   Pangolin 
   tf2_ros 
   tf2_eigen 
+  tf2_geometry_msgs
   slam_msgs 
-  pcl_ros 
-  pcl_conversions 
-  PCL 
   nav_msgs 
   std_srvs
 )
 
+set(pcl_dependencies
+  pcl_ros
+  pcl_conversions
+  PCL
+)
+
+set(common_dependencies
+  ${core_dependencies}
+  ${pcl_dependencies}
+)
+
+set(cv_bridge_dependencies
+  ${common_dependencies}
+  cv_bridge
+)
+
+# Core library with minimal dependencies
 add_library(orb_slam3_ros2_wrapper_common SHARED
   src/type_conversion.cpp
   src/orb_slam3_interface.cpp
   src/time_profiler.cpp
   src/slam_node_base.cpp
 )
-ament_target_dependencies(orb_slam3_ros2_wrapper_common ${dependencies})
+ament_target_dependencies(orb_slam3_ros2_wrapper_common ${core_dependencies})
+# Explicitly exclude PCL from the common library to avoid ABI conflicts
+target_compile_definitions(orb_slam3_ros2_wrapper_common PRIVATE ORB_SLAM3_ROS2_WRAPPER_EXCLUDE_PCL)
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   target_compile_definitions(orb_slam3_ros2_wrapper_common PRIVATE ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA=1)
 endif()
@@ -100,7 +118,7 @@ add_executable(rgbd
   src/rgbd/rgbd-slam-node.cpp
   src/rgbd/rgbd.cpp
 )
-ament_target_dependencies(rgbd ${dependencies})
+ament_target_dependencies(rgbd ${cv_bridge_dependencies})
 target_link_libraries(rgbd orb_slam3_ros2_wrapper_common ${PCL_LIBRARIES})
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   set_target_properties(rgbd PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -111,9 +129,14 @@ endif()
 add_executable(rgbd_imu
   src/rgbd-imu/rgbd-imu-slam-node.cpp
   src/rgbd-imu/rgbd_imu.cpp
+  src/slam_node_base.cpp
+  src/orb_slam3_interface.cpp
+  src/type_conversion.cpp
+  src/time_profiler.cpp
 )
-ament_target_dependencies(rgbd_imu ${dependencies})
-target_link_libraries(rgbd_imu orb_slam3_ros2_wrapper_common ${PCL_LIBRARIES})
+ament_target_dependencies(rgbd_imu ${core_dependencies})
+target_link_libraries(rgbd_imu ${OpenCV_LIBS})
+target_compile_definitions(rgbd_imu PRIVATE ORB_SLAM3_ROS2_WRAPPER_EXCLUDE_PCL)
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   set_target_properties(rgbd_imu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   target_compile_definitions(rgbd_imu PRIVATE ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA=1)
@@ -124,7 +147,7 @@ add_executable(mono_imu
   src/mono-imu/mono-imu-slam-node.cpp
   src/mono-imu/mono_imu.cpp
 )
-ament_target_dependencies(mono_imu ${dependencies})
+ament_target_dependencies(mono_imu ${cv_bridge_dependencies})
 target_link_libraries(mono_imu orb_slam3_ros2_wrapper_common ${PCL_LIBRARIES})
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   set_target_properties(mono_imu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -136,7 +159,7 @@ add_executable(stereo
   src/stereo/stereo-slam-node.cpp
   src/stereo/stereo.cpp
 )
-ament_target_dependencies(stereo ${dependencies})
+ament_target_dependencies(stereo ${cv_bridge_dependencies})
 target_link_libraries(stereo orb_slam3_ros2_wrapper_common ${PCL_LIBRARIES})
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   set_target_properties(stereo PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -148,7 +171,7 @@ add_executable(mono
   src/mono/mono-slam-node.cpp
   src/mono/mono.cpp
 )
-ament_target_dependencies(mono ${dependencies})
+ament_target_dependencies(mono ${cv_bridge_dependencies})
 target_link_libraries(mono orb_slam3_ros2_wrapper_common ${PCL_LIBRARIES})
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   set_target_properties(mono PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -160,7 +183,7 @@ add_executable(stereo_imu
   src/stereo-imu/stereo-imu-slam-node.cpp
   src/stereo-imu/stereo_imu.cpp
 )
-ament_target_dependencies(stereo_imu ${dependencies})
+ament_target_dependencies(stereo_imu ${cv_bridge_dependencies})
 target_link_libraries(stereo_imu orb_slam3_ros2_wrapper_common ${PCL_LIBRARIES})
 if(ORB_SLAM3_ROS2_WRAPPER_ENABLE_CUDA)
   set_target_properties(stereo_imu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

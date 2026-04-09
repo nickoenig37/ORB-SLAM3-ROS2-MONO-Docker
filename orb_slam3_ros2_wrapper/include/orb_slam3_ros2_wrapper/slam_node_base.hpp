@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <chrono>
+#include <mutex>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -56,6 +57,10 @@ namespace ORB_SLAM3_Wrapper
         void onTracked(const std_msgs::msg::Header &stamp_source_header);
 
         std::shared_ptr<ORBSLAM3Interface> interface() { return interface_; }
+
+        // Guards all ORB-SLAM3 interface calls from concurrent callbacks when using
+        // MultiThreadedExecutor (sensor callbacks, timers, and services).
+        std::mutex slamInterfaceMutex_;
 
     private:
         void publishMapData();

@@ -168,7 +168,9 @@ namespace ORB_SLAM3_Wrapper
                 }
             }
         }
+#ifndef ORB_SLAM3_ROS2_WRAPPER_EXCLUDE_PCL
         mapPointCloud = MapPointsToPCL(trackedMapPoints);
+#endif
     }
 
     void ORBSLAM3Interface::mapPointsVisibleFromPose(geometry_msgs::msg::Pose cameraPose, std::vector<ORB_SLAM3::MapPoint*>& points, int maxLandmarks, float maxDistance, float maxAngle)
@@ -493,17 +495,21 @@ namespace ORB_SLAM3_Wrapper
         }
         else
         {
-            switch (currentTrackingState)
+            if (currentTrackingState != lastTrackingStateLogged_)
             {
-            case 0:
-                std::cerr << "ORB-SLAM failed: No images yet." << endl;
-                break;
-            case 1:
-                std::cerr << "ORB-SLAM failed: Not initialized." << endl;
-                break;
-            case 3:
-                std::cerr << "ORB-SLAM failed: Tracking LOST." << endl;
-                break;
+                switch (currentTrackingState)
+                {
+                case 0:
+                    std::cerr << "ORB-SLAM failed: No images yet." << endl;
+                    break;
+                case 1:
+                    std::cerr << "ORB-SLAM failed: Not initialized." << endl;
+                    break;
+                case 3:
+                    std::cerr << "ORB-SLAM failed: Tracking LOST." << endl;
+                    break;
+                }
+                lastTrackingStateLogged_ = currentTrackingState;
             }
             return false;
         }

@@ -34,3 +34,21 @@ container_root/ros_env_vars.sh
 container_root/.nv/
 orb_slam3_ros2_wrapper/datasets/**
 !orb_slam3_ros2_wrapper/datasets/PLACE_YOUR_DATASETS_HERE
+
+# Generated build artifacts (colcon / ROS2)
+build/
+install/
+log/
+container_root/build/
+container_root/install/
+container_root/log/
+
+# Ephemeral user/machine-specific files in container_root
+container_root/.ssh/
+container_root/.gnupg/
+container_root/.gitconfig
+container_root/.ros/cyclonedds.xml
+
+# Python cache artifacts
+__pycache__/
+*.pyc

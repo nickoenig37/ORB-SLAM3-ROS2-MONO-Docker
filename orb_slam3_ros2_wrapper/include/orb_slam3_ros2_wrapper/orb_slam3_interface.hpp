@@ -29,8 +29,6 @@
 #include <slam_msgs/msg/map_data.hpp>
 #include <slam_msgs/msg/map_graph.hpp>
 
-#include <cv_bridge/cv_bridge.h>
-
 
 #include "sophus/se3.hpp"
 #include "System.h"
@@ -139,6 +137,7 @@ namespace ORB_SLAM3_Wrapper
         Eigen::Affine3f latestTrackedPoseORB_camera_; // from map_orb to camera_link
         Eigen::Affine3f robotBase_to_cameraLink_;
         bool hasTracked_ = false;
+        int lastTrackingStateLogged_ = -1;
         geometry_msgs::msg::Pose initialRobotPose_;
         std::string globalFrame_;
         std::string odomFrame_;

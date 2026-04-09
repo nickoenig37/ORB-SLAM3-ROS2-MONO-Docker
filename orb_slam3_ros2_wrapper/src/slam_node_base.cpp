@@ -136,6 +136,7 @@ namespace ORB_SLAM3_Wrapper
     void SlamNodeBase::onTracked(const std_msgs::msg::Header &stamp_source_header)
     {
         isTracked_ = true;
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
         // if tf publishing is enabled, move into this block.
         if (publish_tf_)
         {
@@ -178,7 +179,8 @@ namespace ORB_SLAM3_Wrapper
                                             std::shared_ptr<slam_msgs::srv::GetAllLandmarksInMap::Request> /*request*/,
                                             std::shared_ptr<slam_msgs::srv::GetAllLandmarksInMap::Response> response)
     {
-        if (isTracked_)
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
+        if (isTracked_ && interface_ && interface_->slam() && interface_->slam()->GetTrackingState() == 2)
         {
             // Using high resolution clock to measure time
             auto start = std::chrono::high_resolution_clock::now();
@@ -215,12 +217,14 @@ namespace ORB_SLAM3_Wrapper
                                          std::shared_ptr<std_srvs::srv::SetBool::Request> /*request*/,
                                          std::shared_ptr<std_srvs::srv::SetBool::Response> /*response*/)
     {
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
         interface_->resetLocalMapping();
     }
 
     void SlamNodeBase::publishMapData()
     {
-        if (isTracked_)
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
+        if (isTracked_ && interface_ && interface_->slam() && interface_->slam()->GetTrackingState() == 2)
         {
             auto start = std::chrono::high_resolution_clock::now();
             slam_msgs::msg::SlamInfo slamInfoMsg;
@@ -249,6 +253,11 @@ namespace ORB_SLAM3_Wrapper
                                     std::shared_ptr<slam_msgs::srv::GetMap::Response> response)
     {
         RCLCPP_INFO(this->get_logger(), "GetMap2 service called.");
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
+        if (!(isTracked_ && interface_ && interface_->slam() && interface_->slam()->GetTrackingState() == 2))
+        {
+            return;
+        }
         slam_msgs::msg::MapData mapDataMsg;
         interface_->mapDataToMsg(mapDataMsg, false, request->tracked_points, request->kf_id_for_landmarks);
         response->data = mapDataMsg;
@@ -259,6 +268,7 @@ namespace ORB_SLAM3_Wrapper
                                                 std::shared_ptr<slam_msgs::srv::GetLandmarksInView::Response> response)
     {
         RCLCPP_INFO(this->get_logger(), "GetMapPointsInView service called.");
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
         std::vector<slam_msgs::msg::MapPoint> landmarks;
         std::vector<ORB_SLAM3::MapPoint *> points;
         interface_->mapPointsVisibleFromPose(request->pose, points, 1000, request->max_dist_pose_observation, request->max_angle_pose_observation);
@@ -278,8 +288,10 @@ namespace ORB_SLAM3_Wrapper
             landmarks.push_back(landmark);
         }
         response->map_points = landmarks;
+#ifndef ORB_SLAM3_ROS2_WRAPPER_EXCLUDE_PCL
         auto cloud = MapPointsToPCL(points);
         visibleLandmarksPub_->publish(cloud);
+#endif
 
         // Convert the pose in request to PoseStamped and publish
         geometry_msgs::msg::PoseStamped pose_stamped;
@@ -295,6 +307,7 @@ namespace ORB_SLAM3_Wrapper
                                     std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                                     std::shared_ptr<std_srvs::srv::SetBool::Response> response)
     {
+        std::lock_guard<std::mutex> lock(slamInterfaceMutex_);
         interface_->saveAtlas();
     }
 
